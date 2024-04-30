@@ -90,9 +90,51 @@ def aes_encryption(data, key):
     cipher = bytes_from_state(state)
     print(cipher)
     # return cipher
-    
-    
-    
+
     
 aes_encryption(plaintext, key)
+
+
+
+
+##DEcryption
+def inv_shift_rows(state):
+    # Inverse ShiftRows
+    state[0][1], state[1][1], state[2][1], state[3][1] = state[3][1], state[0][1], state[1][1], state[2][1]
+    state[0][2], state[1][2], state[2][2], state[3][2] = state[2][2], state[3][2], state[0][2], state[1][2]
+    state[0][3], state[1][3], state[2][3], state[3][3] = state[1][3], state[2][3], state[3][3], state[0][3]
+    return state
+
+def inv_sub_bytes(state):
+    # Inverse SubBytes using the inverse S-box
+    for r in range(len(state)):
+        state[r] = [inv_s_box[state[r][c]] for c in range(len(state[0]))]
+    return state
+
+def inv_add_round_key(state, key):
+    # Inverse AddRoundKey
+    return xor_key(state, key)
+
+def aes_decryption(data, key):
+    nr = 10
+    
+    # Initialize state matrix
+    state = state_from_bytes(data)
+    
+    # Perform decryption rounds
+    for round in range(nr - 1, 0, -1):  # Reverse order of rounds
+        state = inv_add_round_key(state, key)
+        state = inv_shift_rows(state)
+        state = inv_sub_bytes(state)
+        
+    # Final round
+    state = inv_add_round_key(state, key)
+    
+    # Get decrypted plaintext from state
+    plaintext = bytes_from_state(state)
+    
+    return plaintext
+
+decrypted_text = aes_decryption(cipher, key)
+print(decrypted_text)
  
